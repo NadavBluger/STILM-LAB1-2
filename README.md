@@ -127,14 +127,16 @@ python lab-1-2-attention-lm.py --models both
 **Question:** What is the runtime (compute) and memory complexity of an attention forward pass? Which of the two do you think is more limiting at large scales (sequences longer than 100k tokens) and why?
 
 **Answer:**
-
+Time complexity is O(N^2*dk + N*d*dk + N*dk*V) with N being the length of the token sequence, d is the embedding dimension, and dk is the hidden dimension size and V being the vocabulary size.
+Under the same naming scheme the memory complexity is O(N^2 + N*dk + dk*V).
+Our estimation is that a 100k long token sequence will demand an order of 10 GB RAM (under the assumption that a number is represented with one byte) which is achievable even with a private laptop so in our opinion the more limiting factor is the runtime
 
 ### TODO 8: Scaling the scores
 
 **Question:** Part of the attention function requires dividing by the square root of the hidden dimension. Why is this useful?
 
 **Answer:**
-
+When ones has large values in the attention one also get weak gradients, so in order to avoid that issue we attempt to "normalize" the values
 
 ### TODO 9: Counting forward passes
 
@@ -143,7 +145,8 @@ During training, how many forward passes does it take to compute the loss over a
 During generation, how many forward passes does `generate` need to produce 63 **new** tokens? Explain what causes the difference.
 
 **Answer:**
-
+Training only requires one pass assuming Q is of length of at least 63. This is because the calculation is done in parallel
+Inference requires 63 passes with each one generating one new token and appending it to the context
 
 ## Lab debrief
 **Question:** We're interested in any thoughts you have about this lab so that we can improve this lab for later years, and to inform later labs for this year. Please list any issues that arose or comments you have to improve the lab. Useful things to comment on include the following, but you're not restricted to these:
@@ -152,7 +155,9 @@ During generation, how many forward passes does `generate` need to produce 63 **
 * Was it clear (at least after you completed the lab) what the points of the exercises were?
 
 **Answer:**
-
+We got stuck for a long time on technical dimension "play", this made the lab quite long. All in all it took us 4 hours
+Must of the instruction were clear, ToDo 1 was not completely clear that we need to create a cumulative sum
+The point of the lab was clear
 ## Submission
 Collect all of the files in the given directory into a **flat** zip file (**NO** internal directories) and submit it for grading via Gradescope.
 
