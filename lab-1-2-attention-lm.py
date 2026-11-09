@@ -237,7 +237,6 @@ def attention(
     batched_C = batched_A @ batched_V
 
 
-    # TODO COMPLETE (4)
     return batched_A, batched_C
 
 
@@ -292,9 +291,9 @@ class ATTNLM(nn.Module):
         super().__init__()
         self.embed = nn.Embedding(vocab_size, embedding_size)
         # TODO COMPLETE (5)
-        self.q_proj = nn.Linear(embedding_size, hidden_size, bias=False)
-        self.k_proj = nn.Linear(embedding_size, hidden_size, bias=False)
-        self.v_proj = nn.Linear(embedding_size, hidden_size, bias=False)
+        self.q_proj = nn.Linear(embedding_size, hidden_size, bias=True)
+        self.k_proj = nn.Linear(embedding_size, hidden_size, bias=True)
+        self.v_proj = nn.Linear(embedding_size, hidden_size, bias=True)
         self.hidden2output = nn.Linear(hidden_size, vocab_size)
 
     def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
@@ -316,17 +315,12 @@ class ATTNLM(nn.Module):
             returns a tensor of shape (2, 5, 100).
         """
 
-        print("hello world!!!!!!!!!!!!!!!!!!")
+        batch_size = input_ids.size(0)
         embedded = self.embed(input_ids)
-        print("after embed")
         batch_Q = self.q_proj(embedded)
         batch_K = self.k_proj(embedded)
         batch_V = self.v_proj(embedded)
-        mask = causal_mask(input_ids.size(1), device=input_ids.device)
-        print(f"{batch_Q.size()=}")
-        print(f"{batch_K.size()=}")
-        print(f"{batch_V.size()=}")
-        print(f"{mask.size()=}")
+        mask = causal_mask(input_ids.size(1), device=input_ids.device).unsqueeze(0).expand(batch_size, -1, -1)
         _, attentioned = attention(batch_Q, batch_K, batch_V, mask)
         return self.hidden2output(attentioned)
 
