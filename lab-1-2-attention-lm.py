@@ -179,7 +179,7 @@ def causal_mask(seq_len: int, device: torch.device | str) -> torch.Tensor:
         causal_mask(3, "cpu").tolist() ->
             [[True, False, False], [True, True, False], [True, True, True]]
     """
-    mask = torch.full((seq_len, seq_len), False)
+    mask = torch.full((seq_len, seq_len), False).to(device)
     for i in range(seq_len):
         for j in range(seq_len):
             if j <= i:
@@ -292,9 +292,9 @@ class ATTNLM(nn.Module):
         super().__init__()
         self.embed = nn.Embedding(vocab_size, embedding_size)
         # TODO COMPLETE (5)
-        self.q_proj = ...
-        self.k_proj = ...
-        self.v_proj = ...
+        self.q_proj = nn.Linear(embedding_size, hidden_size, bias=False)
+        self.k_proj = nn.Linear(embedding_size, hidden_size, bias=False)
+        self.v_proj = nn.Linear(embedding_size, hidden_size, bias=False)
         self.hidden2output = nn.Linear(hidden_size, vocab_size)
 
     def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
@@ -315,8 +315,20 @@ class ATTNLM(nn.Module):
             for input_ids of shape (2, 5) and a vocabulary of 100 tokens,
             returns a tensor of shape (2, 5, 100).
         """
-        # TODO COMPLETE (6)
-        raise NotImplementedError("TODO 6")
+
+        print("hello world!!!!!!!!!!!!!!!!!!")
+        embedded = self.embed(input_ids)
+        print("after embed")
+        batch_Q = self.q_proj(embedded)
+        batch_K = self.k_proj(embedded)
+        batch_V = self.v_proj(embedded)
+        mask = causal_mask(input_ids.size(1), device=input_ids.device)
+        print(f"{batch_Q.size()=}")
+        print(f"{batch_K.size()=}")
+        print(f"{batch_V.size()=}")
+        print(f"{mask.size()=}")
+        _, attentioned = attention(batch_Q, batch_K, batch_V, mask)
+        return self.hidden2output(attentioned)
 
 
 def loss_fn(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
