@@ -229,8 +229,16 @@ def attention(
     if mask is not None:
         assert mask.shape == torch.Size([batch_size, query_len, key_len])
 
+    attn = batched_Q @ batched_K.transpose(-1, -2) / math.sqrt(hidden_size)
+    if mask is not None:
+        attn = attn.masked_fill(~mask, float('-inf'))
+
+    batched_A = torch.softmax(attn, dim=-1)
+    batched_C = batched_A @ batched_V
+
+
     # TODO COMPLETE (4)
-    raise NotImplementedError("TODO 4")
+    return batched_A, batched_C
 
 
 class UATTNLM(nn.Module):
