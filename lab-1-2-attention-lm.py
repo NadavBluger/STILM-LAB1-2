@@ -267,9 +267,8 @@ class UATTNLM(nn.Module):
         """
         embedded = self.embed(input_ids)
         attentioned = torch.cumsum(embedded, dim=1)
-        divisor = torch.arange(1, input_ids.size(1) + 1)
+        divisor = torch.arange(1, input_ids.size(1) + 1, device=input_ids.device)
         attentioned = attentioned/ divisor.view(1,-1,1)
-        print(self.hidden2output(attentioned))
         return self.hidden2output(attentioned)
 
 
